@@ -120,7 +120,7 @@ hist(dailySteps$steps,
      breaks = 8)
 ```
 
-The mean daily steps is now 10,770 (no change from original) and the median daily steps is now also 10,770, which is 10 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. 
+The mean daily steps is now 10,770 (no change from original) and the median daily steps is now also 10,770, which is 10 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. Mean substitution moved the median closer to the mean. 
 
 The skewness of the mean-substituted data is -0.33, indicating that the mean substitution did not substantively change the skewness of the data. However, the kurtosis value of the mean substituted data is 4.29, indicating that the new distribution has an even higher peak than the original data. Mean substitution had the effect of concentrating the data towards the center of the distribution, which makes sense substantively because adding new observations with means would tend to move the overall distribution towards its central tendency. 
 
@@ -132,3 +132,5 @@ kurtosis(dailySteps$steps)
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
