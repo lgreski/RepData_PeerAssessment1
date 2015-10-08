@@ -53,9 +53,14 @@ hist(dailySteps$steps,
      breaks = 8)
 ```
 
-The mean and median numbers of steps per day included in the following `summary()` output. 
+The mean number of steps per day is 10,770 and the median number of steps per day is 10,670 as per the following `summary()` output.  Since we'll need to compare this summary to a version with mean substituted missing values later in the analysis, we'll also calculate skewness and kurtosis. For these statistics, we'll need the `moments` package. 
+
+A skewness value of -0.31 means that the distribution of daily steps is slightly negatively skewed (i.e. asymetrical towards the low end of the distribution). A kurtosis value of 3.73 indicates the data is leptokurtic (i.e. it has a higher peak than a normal distribution, which would have a kurtosis of 3.0). 
 ```{r}
 summary(dailySteps$steps)
+library(moments)
+skewness(dailySteps$steps)
+kurtosis(dailySteps$steps)
 ```
 
 ## What is the average daily activity pattern?
@@ -70,7 +75,8 @@ plot(dailyPattern$interval,dailyPattern$steps,
      ylab="Mean(steps)")
 ```
 
-Next, we'll find the five minute interval with the maximum number of steps on average.
+The five minute interval with the maximum number of steps on average is interval 835, with an average of slightly more than 206 steps over all of the days in the activity data set.
+
 ```{r}
 dailyPattern[dailyPattern$steps == max(dailyPattern$steps),] 
 ```
@@ -88,7 +94,41 @@ Multiple approaches may be taken to substitute missing values with a valid value
 We will merge the the `dailyPattern` data frame with the `activityData` frame by interval, after renaming the `steps` column in `dailySteps` to `avgSteps`. 
 
 ```{r}
-
+theNames <- colnames(dailyPattern)
+theNames[2] <- "avgSteps"
+colnames(dailyPattern) <- theNames 
+mergedActivity <- merge(activityData,dailyPattern,by="interval",all.x=TRUE)
+mergedActivity$theNAs <- is.na(mergedActivity$steps)
+mergedActivity$steps[mergedActivity$theNAs] <- mergedActivity$avgSteps[mergedActivity$theNAs]
 ```
+
+Confirm the number of observations where we substituted the averge steps per interval is 2,304 with the following function. Note that there are 19 intervals where the average steps was 0, so we couldn't simply count the number of rows where `steps == avgSteps`. 
+
+```{r}
+nrow(mergedActivity[mergedActivity$steps == mergedActivity$avgSteps &
+          mergedActivity$theNAs == TRUE,])
+```
+
+Now re-aggregate the data and generate a histogram and mean / median on the data frame with mean substituted missing values. 
+
+```{r}
+dailySteps <- aggregate(steps ~ date,FUN=sum,data=mergedActivity)
+
+hist(dailySteps$steps,
+     main="Histogram of Daily Steps (mean substituted NAs)",
+     xlab="Total Daily Steps",
+     breaks = 8)
+```
+
+The mean daily steps is now 10,770 (no change from original) and the median daily steps is now also 10,770, which is 10 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. 
+
+The skewness of the mean-substituted data is -0.33, indicating that the mean substitution did not substantively change the skewness of the data. However, the kurtosis value of the mean substituted data is 4.29, indicating that the new distribution has an even higher peak than the original data. Mean substitution had the effect of concentrating the data towards the center of the distribution, which makes sense substantively because adding new observations with means would tend to move the overall distribution towards its central tendency. 
+
+```{r}
+summary(dailySteps$steps)
+skewness(dailySteps$steps)
+kurtosis(dailySteps$steps)
+```
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
