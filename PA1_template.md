@@ -1,5 +1,9 @@
 # Reproducible Research: Peer Assessment 1
 
+Author: Len Greski<br>
+Date: October 8, 2015
+
+This report is submitted in fulfillment of requirements for the Johns Hopkins University Data Science curriculum couse in *Reproducible Research*, [Peer Assessment 1](https://github.com/rdpeng/RepData_PeerAssessment1/blob/master/doc/instructions.pdf) conducted during October 2015. 
 
 ## Loading and preprocessing the data
 In this section of the analysis we check whether the input data file `activity.csv` is in the *R Working Directory*, and download the zip version if necessary. Then we unzip the downloaded file. Before the download, we determine whether the code is running on a Windows-based operating system and specify the correct method (curl or wininet). 
@@ -13,7 +17,8 @@ if(!file.exists("activity.csv")){
      unzip(zipfile = "activity.zip")    
 }
 ```
-For reading the file, we prefer Hadley Wickham's `readr` package, which runs orders of magnitude faster than read routines in Base R. The data is comma separated, so we'll use `read_csv` to load the activity data.  
+
+For reading the file we prefer Hadley Wickham's `readr` package to the base functionality, because `readr` runs orders of magnitude faster than read routines in Base R. The data is comma separated, so we'll use `read_csv` to load the activity data.  
 
 
 ```r
@@ -21,20 +26,22 @@ library(readr)
 activityData <- read_csv("activity.csv",
      col_types=list(col_double(),col_character(),col_double()))
 ```
-The unit of analysis or "observation" in the input file is a the number of steps taken in a five minute interval. Therefore, each day includes 288 individual observations. To analyze the data by day, we'll need to aggregate the number of steps by day. The `aggregate()` function ignores missing values by default, so the output data frame will have no missing values for the `steps` column. 
+The unit of analysis or "observation" in the input file is a the number of steps taken in a five minute interval for a single individual. Therefore, each day includes 288 individual observations. The following codebook describes the variables included in the data set, along with their data types and ranges. 
+
+### Codebook
+
+<table>
+<tr><th align="left" >Field</th><th align="left">Description</th></tr>
+<tr><td valign="top">steps</td><td>Number of steps taken by the individual, a numeric variable.<br> Range of values: 0 to 806, with 2,304 NA values. <br><br></td></tr>
+<tr><td valign="top">date</td><td>Date on which the steps were recorded, read as a character variable. <br>Range of values: 2012-10-01 to 2012-11-30, a total of 61 days. The values are in YYYY-MM-DD format. No missing values.<br><br> </td></tr>
+<tr><td valign="top">interval&nbsp;&nbsp;</td><td>Five minute interval value, calculated as minutes elapsed from the beginning of the day, a numeric variable.<br>Range of values: 0 to 2,355. No missing values.<br><br> </td></tr>
+</table>
+
+To analyze the data by day, we'll need to aggregate the number of steps by day. The `aggregate()` function ignores missing values by default, so the output data frame will have no missing values for the `steps` column.
 
 
 ```r
 dailySteps <- aggregate(steps ~ date,FUN=sum,data=activityData)
-```
-Since some of our analysis will be easier to read if we understand the hour of the day, we will convert the five minute intervals into a time vector. 
-
-```r
-activityData <- within(activityData,{
-     hour <- trunc(interval / 60)
-     minute <- interval - (hour * 60)
-     theTime <- as.POSIXlt(sprintf("%02d:%02d:00",hour,minute),tz="","%H:%M:%S")
-})
 ```
 
 
@@ -50,7 +57,31 @@ hist(dailySteps$steps,
      breaks = 8)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+Another way to look at the distribution of numbers is with a stem and leaf diagram, which illustrates the underlying data values in the histogram. In the stem and leaf diagram we see a similar pattern as was rendered by the histogram, illustrating the three leftmost significant digits in the daily steps vector. 
+
+
+```r
+stem(dailySteps$steps)
+```
+
+```
+## 
+##   The decimal point is 3 digit(s) to the right of the |
+## 
+##    0 | 01
+##    2 | 52
+##    4 | 504
+##    6 | 803
+##    8 | 3488989
+##   10 | 1112344668024588
+##   12 | 1468893556
+##   14 | 3511144
+##   16 | 4
+##   18 | 
+##   20 | 42
+```
 
 The mean number of steps per day is 10,770 and the median number of steps per day is 10,670 as per the following `summary()` output.  Since we'll need to compare this summary to a version with mean substituted missing values later in the analysis, we'll also calculate skewness and kurtosis. For these statistics, we'll need the `moments` package. 
 
@@ -91,13 +122,13 @@ dailyPattern <- aggregate(steps ~ interval,FUN=mean,data = activityData)
 plot(dailyPattern$interval,dailyPattern$steps,
      type="l",
      main="Average Steps per 5 Minute Interval",
-     xlab="Interval (5 minutes)",
+     xlab="Interval (5 minutes) from 0:00 to 23:55",
      ylab="Mean(steps)")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
 
-The five minute interval with the maximum number of steps on average is interval 835, with an average of slightly more than 206 steps over all of the days in the activity data set.
+The five minute interval with the maximum number of steps on average is interval 835, or 8:35AM, with an average of slightly more than 206 steps over all of the days in the activity data set.
 
 
 ```r
@@ -111,7 +142,7 @@ dailyPattern[dailyPattern$steps == max(dailyPattern$steps),]
 
 ## Imputing missing values
 
-The total number of missing values in the data set is 2,304. 
+The total number of missing values in the data set is 2,304, as noted above in the code book and the `summary()` analysis of the `steps` column, and we confirm this by summing the result of the `is.na()` function. 
 
 
 ```r
@@ -122,9 +153,9 @@ sum(is.na(activityData$steps))
 ## [1] 2304
 ```
 
-Multiple approaches may be taken to substitute missing values with a valid value, ranging from the daily mean steps, or the interval mean steps. Since there are 288 observations in the dailyPattern data frame, we know we have valid observations for each interval in the day. Also, since the number of steps on average does vary by interval, the average per interval is probably a more appropriate missing value substitution strategy than taking the average for each day. 
+Multiple approaches may be taken to substitute missing values with a valid value, ranging from the daily mean steps, the interval mean steps, or using medians of thse values. Since there are 288 observations in the dailyPattern data frame, we know we have valid observations for each interval in the day. Also, since the number of steps on average varies significantly by interval, the average per interval is arguably a more appropriate missing value substitution strategy than taking the average for each day. 
 
-We will merge the the `dailyPattern` data frame with the `activityData` frame by interval, after renaming the `steps` column in `dailySteps` to `avgSteps`. 
+We will merge the the `dailyPattern` data frame with the `activityData` frame by interval, after renaming the `steps` column in `dailySteps` to `avgSteps`. The technical approach taken for mean substitution is to create a logical vector for the rows where `is.na(steps)` is TRUE, and to use that vector to conditionally assign the average steps by interval to the `steps` column.  
 
 
 ```r
@@ -136,7 +167,7 @@ mergedActivity$theNAs <- is.na(mergedActivity$steps)
 mergedActivity$steps[mergedActivity$theNAs] <- mergedActivity$avgSteps[mergedActivity$theNAs]
 ```
 
-Confirm the number of observations where we substituted the averge steps per interval is 2,304 with the following function. Note that there are 19 intervals where the average steps was 0, so we couldn't simply count the number of rows where `steps == avgSteps`. 
+As a data check, we confirm the number of observations where we substituted the averge steps per interval is 2,304 with the following function. Note that there are 19 intervals where the average steps within an interval is 0, so we couldn't simply count the number of rows where `steps == avgSteps`. 
 
 
 ```r
@@ -148,7 +179,7 @@ nrow(mergedActivity[mergedActivity$steps == mergedActivity$avgSteps &
 ## [1] 2304
 ```
 
-Now re-aggregate the data and generate a histogram and mean / median on the data frame with mean substituted missing values. 
+Next, we re-aggregate the data and generate a histogram and mean / median on the data frame with mean substituted missing values. 
 
 
 ```r
@@ -162,7 +193,7 @@ hist(dailySteps$steps,
 
 ![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
 
-The mean daily steps is now 10,770 (no change from original) and the median daily steps is now also 10,770, which is 10 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. Mean substitution moved the median closer to the mean. 
+The mean daily steps is now 10,770 (no change from the original value) and the median daily steps is now also 10,770, which is 10 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. Mean substitution of missing values moved the median closer to the mean. 
 
 The skewness of the mean-substituted data is -0.33, indicating that the mean substitution did not substantively change the skewness of the data. However, the kurtosis value of the mean substituted data is 4.29, indicating that the new distribution has an even higher peak than the original data. Mean substitution had the effect of concentrating the data towards the center of the distribution, which makes sense substantively because adding new observations with means would tend to move the overall distribution towards its central tendency. 
 
@@ -194,5 +225,32 @@ kurtosis(dailySteps$steps)
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+To answer this question, we'll need to calculate day of week from the `date` column, and use it to re-aggregate the activity data and generate two charts. From the charts we observe that weekdays appear to have a higher overall level of activity throughout the daytime hours than the weekends. Both weekdays and weekends show peak activity in the morning, as was described earlier in the analysis where the interval where the maximum average steps occurred was 8:35AM. 
 
+
+```r
+# dayOfWeek is an integer from 0 = "Sunday" to 6 = "Saturday"
+activityData$dayOfWeek <- as.POSIXlt(activityData$date)$wday
+weekdayActivity <- activityData[activityData$dayOfWeek %in% c(0,6) ,]
+weekendActivity <- activityData[activityData$dayOfWeek %in% c(1,2,3,4,5),]
+weekdayPattern <- aggregate(steps ~ interval,FUN=mean,data = weekdayActivity)
+weekendPattern <- aggregate(steps ~ interval,FUN=mean,data = weekendActivity)
+
+# make a chart with 2 rows and one column so we can see both plots on the same
+# image
+par(mfrow = c(2,1))
+
+plot(weekdayPattern$interval,weekdayPattern$steps,
+     type="l",
+     main="Average Steps per 5 Minute Interval - Weekdays",
+     xlab="Interval (5 minutes) from 0:00 to 23:55",
+     ylab="Mean(steps)")
+plot(weekendPattern$interval,weekendPattern$steps,
+     type="l",
+     main="Average Steps per 5 Minute Interval - Weekends",
+     xlab="Interval (5 minutes) from 0:00 to 23:55",
+     ylab="Mean(steps)")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
 
