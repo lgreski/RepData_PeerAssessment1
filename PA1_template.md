@@ -37,11 +37,12 @@ The unit of analysis or "observation" in the input file is a the number of steps
 <tr><td valign="top">interval&nbsp;&nbsp;</td><td>Five minute interval value, calculated as minutes elapsed from the beginning of the day, a numeric variable.<br>Range of values: 0 to 2,355. No missing values.<br><br> </td></tr>
 </table>
 
-To analyze the data by day, we'll need to aggregate the number of steps by day. The `aggregate()` function ignores missing values by default, so the output data frame will have no missing values for the `steps` column.
+To analyze the data by day, we'll need to aggregate the number of steps by day. The `aggregate()` function ignores missing values by default, so the output data frame will have no missing values for the `steps` column. Since there was a fair amount of discussion on the course Discussion Forum about how to omit missing values on the `aggregate()` function, we've explicitly set the `na.action` parameter. 
 
 
 ```r
-dailySteps <- aggregate(steps ~ date,FUN=sum,data=activityData)
+dailySteps <- aggregate(steps ~ date,
+     FUN=sum,data=activityData,na.action="na.omit")
 ```
 
 
@@ -83,17 +84,35 @@ stem(dailySteps$steps)
 ##   20 | 42
 ```
 
-The mean number of steps per day is 10,770 and the median number of steps per day is 10,670 as per the following `summary()` output.  Since we'll need to compare this summary to a version with mean substituted missing values later in the analysis, we'll also calculate skewness and kurtosis. For these statistics, we'll need the `moments` package. 
+The mean number of steps per day is 10,766.19 and the median number of steps per day is 10,765 as per the following `summary()` output. Note that unless the `digits` parameter is set in the `summary()` function, it returns a mean and median that do NOT match the results of the `mean()` and `median()` functions. Therefore, we've set `digits=7` to match the results from `mean()` and `median()`. 
+
+Since we'll need to compare this summary to a version with mean substituted missing values later in the analysis, we'll also calculate skewness and kurtosis. For these statistics, we'll need the `moments` package. 
 
 A skewness value of -0.31 means that the distribution of daily steps is slightly negatively skewed (i.e. asymetrical towards the low end of the distribution). A kurtosis value of 3.73 indicates the data is leptokurtic (i.e. it has a higher peak than a normal distribution, which would have a kurtosis of 3.0). 
 
 ```r
-summary(dailySteps$steps)
+summary(dailySteps$steps,digits=7)
 ```
 
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##      41    8841   10760   10770   13290   21190
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##    41.00  8841.00 10765.00 10766.19 13294.00 21194.00
+```
+
+```r
+mean(dailySteps$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(dailySteps$steps)
+```
+
+```
+## [1] 10765
 ```
 
 ```r
@@ -193,18 +212,18 @@ hist(dailySteps$steps,
 
 ![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
 
-The mean daily steps is now 10,770 (no change from the original value) and the median daily steps is now also 10,770, which is 10 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. Mean substitution of missing values moved the median closer to the mean. 
+The mean daily steps is now 10,766.19 (no change from the original value) and the median daily steps is now also 10,766.19, which is 1.19 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. Mean substitution of missing values moved the median closer to the mean. 
 
 The skewness of the mean-substituted data is -0.33, indicating that the mean substitution did not substantively change the skewness of the data. However, the kurtosis value of the mean substituted data is 4.29, indicating that the new distribution has an even higher peak than the original data. Mean substitution had the effect of concentrating the data towards the center of the distribution, which makes sense substantively because adding new observations with means would tend to move the overall distribution towards its central tendency. 
 
 
 ```r
-summary(dailySteps$steps)
+summary(dailySteps$steps,digits=7)
 ```
 
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##      41    9819   10770   10770   12810   21190
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##    41.00  9819.00 10766.19 10766.19 12811.00 21194.00
 ```
 
 ```r
