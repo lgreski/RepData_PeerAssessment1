@@ -1,4 +1,9 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+output:
+  html_document:
+    keep_md: true
+---
 
 Author: Len Greski<br>
 Date: October 8, 2015
@@ -58,7 +63,7 @@ hist(dailySteps$steps,
      breaks = 8)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
 
 Another way to look at the distribution of numbers is with a stem and leaf diagram, which illustrates the underlying data values in the histogram. In the stem and leaf diagram we see a similar pattern as was rendered by the histogram, illustrating the three leftmost significant digits in the daily steps vector. 
 
@@ -145,7 +150,7 @@ plot(dailyPattern$interval,dailyPattern$steps,
      ylab="Mean(steps)")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
 
 The five minute interval with the maximum number of steps on average is interval 835, or 8:35AM, with an average of slightly more than 206 steps over all of the days in the activity data set.
 
@@ -210,7 +215,7 @@ hist(dailySteps$steps,
      breaks = 8)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
 
 The mean daily steps is now 10,766.19 (no change from the original value) and the median daily steps is now also 10,766.19, which is 1.19 steps higher than the original analysis where we excluded observations that had missing values for the number of steps. Mean substitution of missing values moved the median closer to the mean. 
 
@@ -271,5 +276,5 @@ plot(weekendPattern$interval,weekendPattern$steps,
      ylab="Mean(steps)")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
 
