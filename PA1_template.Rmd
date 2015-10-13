@@ -151,7 +151,19 @@ kurtosis(dailySteps$steps)
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-To answer this question, we'll need to calculate day of week from the `date` column, and use it to re-aggregate the activity data and generate two charts. From the charts we observe that weekdays appear to have a higher overall level of activity throughout the daytime hours than the weekends. Both weekdays and weekends show peak activity in the morning, as was described earlier in the analysis where the interval where the maximum average steps occurred was 8:35AM. 
+To answer this question, we'll need to calculate day of week from the `date` column, and use it to re-aggregate the activity data and generate two charts. From the charts we observe that weekdays appear to have a consistently higher overall level of activity throughout the daytime hours than the weekends. 
+
+Output from the `summary()` function confirms this, because the median, mean, and 75th percentile for the weekday data are all higher than the corresponding values for weekends, even though the maximum value from weekend days is higher than the maximum on weekday days. 
+
+<table>
+<tr><th>Measure&nbsp;&nbsp;&nbsp;</th><th>Weekday</th><th>Weekend</th><tr>
+<tr><td>Median</td><td>32.04</td><td>23.97</td></tr>
+<tr><td>Mean</td><td>43.08</td><td>35.34</td></tr>
+<tr><td>75th %ile</td><td>75.57</td><td>51.87</td></tr>
+<tr><td>Maximum</td><td>175</td><td>234</td></tr>
+</table>
+
+Both weekdays and weekends show peak activity in the morning, as was described earlier in the analysis where the interval where the maximum average steps occurred was 8:35AM. By setting the y axis scales consistently across both charts, we can see that the highest activity is on weekend morning, which is confirmed by the output of the `summary()` function as we described previously. 
 
 ```{r,fig.height=9}
 # dayOfWeek is an integer from 0 = "Sunday" to 6 = "Saturday"
@@ -169,11 +181,18 @@ plot(weekdayPattern$interval,weekdayPattern$steps,
      type="l",
      main="Average Steps per 5 Minute Interval - Weekdays",
      xlab="Interval (5 minutes) from 0:00 to 23:55",
-     ylab="Mean(steps)")
+     ylab="Mean(steps)",
+     ylim=c(0, 300)
+     )
+abline(h=c(100,200),lty=2,col="blue")
 plot(weekendPattern$interval,weekendPattern$steps,
      type="l",
      main="Average Steps per 5 Minute Interval - Weekends",
      xlab="Interval (5 minutes) from 0:00 to 23:55",
-     ylab="Mean(steps)")
+     ylab="Mean(steps)",
+     ylim=c(0, 300))
+abline(h=c(100,200),lty=2,col="blue")
+summary(weekdayPattern$steps)
+summary(weekendPattern$steps)
 ```
 
