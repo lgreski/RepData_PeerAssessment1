@@ -151,48 +151,40 @@ kurtosis(dailySteps$steps)
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-To answer this question, we'll need to calculate day of week from the `date` column, and use it to re-aggregate the activity data and generate two charts. From the charts we observe that weekdays appear to have a consistently higher overall level of activity throughout the daytime hours than the weekends. 
+To answer this question, we'll need to calculate day of week from the `date` column, and use it to re-aggregate the activity data and generate two charts. From the charts we observe that weekends appear to have a consistently higher overall level of activity throughout the daytime hours than weekdays.  
 
-Output from the `summary()` function confirms this, because the median, mean, and 75th percentile for the weekday data are all higher than the corresponding values for weekends, even though the maximum value from weekend days is higher than the maximum on weekday days. 
+Output from the `summary()` function confirms this, because the median, mean, and 75th percentile for the weekend data are all higher than the orresponding values for weekdays, even though the maximum value from weekdays is higher than the maximum on weekend days. 
+
+Since there there is more weekday data than weekend data, the weekday chart looks more similar to the original chart of average steps per time interval than the weekend chart. 
 
 <table>
-<tr><th>Measure&nbsp;&nbsp;&nbsp;</th><th>Weekday</th><th>Weekend</th><tr>
+<tr><th>Measure&nbsp;&nbsp;&nbsp;</th><th>Weekend</th><th>Weekday</th><tr>
 <tr><td>Median</td><td>32.04</td><td>23.97</td></tr>
 <tr><td>Mean</td><td>43.08</td><td>35.34</td></tr>
 <tr><td>75th %ile</td><td>75.57</td><td>51.87</td></tr>
 <tr><td>Maximum</td><td>175</td><td>234</td></tr>
 </table>
 
-Both weekdays and weekends show peak activity in the morning, as was described earlier in the analysis where the interval where the maximum average steps occurred was 8:35AM. By setting the y axis scales consistently across both charts, we can see that the highest activity is on weekend morning, which is confirmed by the output of the `summary()` function as we described previously. 
+Both weekdays and weekends show peak activity in the morning, as was described earlier in the analysis where the interval where the maximum average steps occurred was 8:35AM.  
 
 ```{r,fig.height=9}
 # dayOfWeek is an integer from 0 = "Sunday" to 6 = "Saturday"
 activityData$dayOfWeek <- as.POSIXlt(activityData$date)$wday
-weekdayActivity <- activityData[activityData$dayOfWeek %in% c(0,6) ,]
-weekendActivity <- activityData[activityData$dayOfWeek %in% c(1,2,3,4,5),]
-weekdayPattern <- aggregate(steps ~ interval,FUN=mean,data = weekdayActivity)
-weekendPattern <- aggregate(steps ~ interval,FUN=mean,data = weekendActivity)
+activityData$dayType <- "Weekday"
+activityData$dayType[which(activityData$dayOfWeek %in% c(0,6))] <- "Weekend"
+pattern <- aggregate(steps ~ dayType + interval,FUN=mean,data = activityData)
 
-# make a chart with 2 rows and one column so we can see both plots on the same
-# image
-par(mfrow = c(2,1))
-
-plot(weekdayPattern$interval,weekdayPattern$steps,
-     type="l",
-     main="Average Steps per 5 Minute Interval - Weekdays",
+library(lattice)
+xyplot(steps ~ interval | dayType,
+     pattern,
+     main = "Average Steps per 5 Minute Interval: Weekdays vs. Weekends",
      xlab="Interval (5 minutes) from 0:00 to 23:55",
      ylab="Mean(steps)",
-     ylim=c(0, 300)
-     )
-abline(h=c(100,200),lty=2,col="blue")
-plot(weekendPattern$interval,weekendPattern$steps,
+     lty=1,
      type="l",
-     main="Average Steps per 5 Minute Interval - Weekends",
-     xlab="Interval (5 minutes) from 0:00 to 23:55",
-     ylab="Mean(steps)",
-     ylim=c(0, 300))
-abline(h=c(100,200),lty=2,col="blue")
-summary(weekdayPattern$steps)
-summary(weekendPattern$steps)
+     layout=c(1,2))
+
+summary(pattern[pattern$dayType=="Weekday","steps"])
+summary(pattern[pattern$dayType=="Weekend","steps"])
 ```
 
