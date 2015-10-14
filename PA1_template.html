@@ -339,12 +339,22 @@ plot(dailyPattern$interval,dailyPattern$steps,
 
 <h2>Imputing missing values</h2>
 
-<p>The total number of missing values in the data set is 2,304, as noted above in the code book and the <code>summary()</code> analysis of the <code>steps</code> column, and we confirm this by summing the result of the <code>is.na()</code> function. </p>
+<p>The total number of missing values in the data set is 2,304, as noted above in the code book and the <code>summary()</code> analysis of the <code>steps</code> column, and we confirm this by summing the result of the <code>is.na()</code> function. Additional investigation of the missing values shows that they are isolated to 8 days, per the following <code>table()</code>. Each day that has any missing values is missing all intervals for the entire day.  </p>
 
 <pre><code class="r">sum(is.na(activityData$steps))
 </code></pre>
 
 <pre><code>## [1] 2304
+</code></pre>
+
+<pre><code class="r">table(activityData[is.na(activityData$steps),&quot;date&quot;])
+</code></pre>
+
+<pre><code>## 
+## 2012-10-01 2012-10-08 2012-11-01 2012-11-04 2012-11-09 2012-11-10 
+##        288        288        288        288        288        288 
+## 2012-11-14 2012-11-30 
+##        288        288
 </code></pre>
 
 <p>Multiple approaches may be taken to substitute missing values with a valid value, ranging from the daily mean steps, the interval mean steps, or using medians of thse values. Since there are 288 observations in the dailyPattern data frame, we know we have valid observations for each interval in the day. Also, since the number of steps on average varies significantly by interval, the average per interval is arguably a more appropriate missing value substitution strategy than taking the average for each day. </p>
@@ -403,11 +413,13 @@ hist(dailySteps$steps,
 <pre><code>## [1] 4.293945
 </code></pre>
 
+<p>A different mean substitution strategy could have a materially different impact on the data. Therefore, whenever mean (or median) substitution is used to replace missing values, it&#39;s important to assess the impact of the substitutions on the distribution of values prior to subsequent analysis of the data. </p>
+
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
 
 <p>To answer this question, we&#39;ll need to calculate day of week from the <code>date</code> column, and use it to re-aggregate the activity data and generate two charts. From the charts we observe that weekends appear to have a consistently higher overall level of activity throughout the daytime hours than weekdays.  </p>
 
-<p>Output from the <code>summary()</code> function confirms this, because the median, mean, and 75th percentile for the weekend data are all higher than the orresponding values for weekdays, even though the maximum value from weekdays is higher than the maximum on weekend days. </p>
+<p>Output from the <code>summary()</code> function confirms this, because the median, mean, and 75th percentile for the weekend data are all higher than the corresponding values for weekdays, even though the maximum value from weekdays is higher than the maximum on weekend days. </p>
 
 <p>Since there there is more weekday data than weekend data, the weekday chart looks more similar to the original chart of average steps per time interval than the weekend chart. </p>
 
