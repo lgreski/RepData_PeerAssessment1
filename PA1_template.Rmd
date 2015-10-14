@@ -6,7 +6,7 @@ output:
 ---
 
 Author: Len Greski<br>
-Date: October 8, 2015
+Date: October 14, 2015
 
 This report is submitted in fulfillment of requirements for the Johns Hopkins University Data Science curriculum couse in *Reproducible Research*, [Peer Assessment 1](https://github.com/rdpeng/RepData_PeerAssessment1/blob/master/doc/instructions.pdf) conducted during October 2015. 
 
